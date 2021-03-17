@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>hospital data heatmap</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="googlebot" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-base.min.js" type="text/javascript"></script>
+  <script src="https://cdn.anychart.com/releases/v8/js/anychart-heatmap.min.js"></script>
+  <script src="https://cdn.anychart.com/releases/8.9.0/js/anychart-data-adapter.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.20.0/vis.min.js" integrity="sha512-CFZV2b4rQq36cxk/HnXzgNxvDJlasmPCZEyrOuLk5oSkLCpw5Ni5LCD9HzFQ96DgE+xd855/HvkRfeK67QOFJw==" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.17.1/axios.js"></script>
+
+  <style id="compiled-css" type="text/css">
+    /* add style here */
+  </style>
+
+</head>
+<body>
+  <div id="app">
+    <v-container fluid>
+      <v-row no-gutters>
+        <v-col
+          cols="8"
+          style="min-width: 600px;"
+          class="flex-grow-1 flex-shrink-0"
+          >
+          <div id="heatMap" style="height:900px;" @click="heatMapClick"></div>
+        </v-col>
+        <v-col
+          cols="4"
+          style="min-width: 100px;"
+          class="flex-grow-0 flex-shrink-1"
+          >
+          <div id="columnChart" style="height:320px;"></div>
+          <!-- <div id="scatterChart" style="height:600px;"></div> -->
+          <div id="barChart" style="height:600px;"></div>
+        </v-col>
+      </v-row>
+    </v-container>
+  </div>
+  <script>
+
+  var app = new Vue({
+  	el: '#app',
+    vuetify: new Vuetify(),
+  	data() {
+    	return {
+        heatMapData: [
+          [1995,53,50,40,29,28,54,101,672,409,407,402,389,296,324,269,376,301,222,267,221,248,233,266,237,362,1441,381],
+          [1996,276,87,70,57,111,126,756,621,471,435,433,396,329,326,363,339,348,372,295,277,282,295,326,407,1651,347,],
+          [1997,241,73,42,60,61,375,310,266,247,222,251,195,176,198,197,186,184,177,169,152,138,197,233,783,163,,],
+          [1998,273,92,67,87,398,341,297,231,236,198,199,185,179,187,165,175,171,157,156,175,152,216,746,136,,,],
+          [1999,303,114,121,526,406,323,304,254,178,219,184,213,191,209,196,183,156,148,185,186,233,788,155,,,,],
+          [2000,455,197,753,535,417,328,309,254,245,208,257,220,217,201,187,187,171,166,192,242,873,165,,,,,],
+          [2001,904,1584,743,467,393,328,305,279,228,239,233,242,231,190,198,175,178,207,254,866,153,,,,,,],
+          [2002,7841,1950,973,677,575,446,386,325,349,321,317,296,264,260,259,251,261,333,1197,264,,,,,,,],
+          [2003,7872,1893,929,628,513,468,367,366,340,279,339,284,258,267,245,288,362,1168,193,,,,,,,,],
+          [2004,7928,1802,849,585,497,371,401,348,323,297,315,293,246,268,247,342,1072,188,,,,,,,,,],
+          [2005,8233,1954,851,637,505,464,371,358,370,301,304,266,267,293,353,1158,253,,,,,,,,,,],
+          [2006,8370,2192,999,682,602,521,459,434,383,346,328,321,321,381,1343,270,,,,,,,,,,,],
+          [2007,9340,2320,1016,867,611,553,499,460,419,391,395,447,487,1570,282,,,,,,,,,,,,],
+          [2008,9073,2144,1104,702,639,564,536,426,407,384,459,501,1625,305,,,,,,,,,,,,,],
+          [2009,8703,2380,1002,749,630,560,593,440,450,512,585,1807,290,,,,,,,,,,,,,,],
+          [2010,10497,2807,1340,1057,855,810,746,677,679,894,2397,369,,,,,,,,,,,,,,,],
+          [2011,10210,2809,1259,855,704,751,668,605,847,2287,390,,,,,,,,,,,,,,,,],
+          [2012,10957,3137,1232,980,783,757,754,946,2611,445,,,,,,,,,,,,,,,,,],
+          [2013,10834,2988,1336,915,843,825,985,2652,449,,,,,,,,,,,,,,,,,,],
+          [2014,10591,3076,1280,1019,816,1102,2843,433,,,,,,,,,,,,,,,,,,,],
+          [2015,9948,3092,1290,1026,1058,3291,486,,,,,,,,,,,,,,,,,,,,],
+          [2016,9865,2793,1386,1242,3478,559,,,,,,,,,,,,,,,,,,,,,],
+          [2017,9894,3264,1796,4235,658,,,,,,,,,,,,,,,,,,,,,,],
+          [2018,10234,3882,5116,762,,,,,,,,,,,,,,,,,,,,,,,],
+          [2019,11759,8046,1077,,,,,,,,,,,,,,,,,,,,,,,,],
+          [2020,13939,2107,,,,,,,,,,,,,,,,,,,,,,,,,],
+          [2021,48,,,,,,,,,,,,,,,,,,,,,,,,,,]
+        ],
+        patientData: [],
+        patients: [],
+        types:['循環器','消化器','脳','皮膚科'],
+        heatMapChart: null,
+        columnChart: null,
+        scatterChart: null,
+        barChart: null,
+        selected: {
+          duration: null,
+          year: null,
+          count: 0
+        }
+      }
+    },
+    computed: {
+      // computed here
+    },
+    mounted() {
+      this.loadHeatMap()
+    },
+    methods: {
+      initPatients () {
+        const url = "https://tohoku-mitc.github.io/pages/test/patient-data.csv"
+        const self = this
+        anychart.data.loadCsvFile(url, function (csv) {
+          //console.log('csv', csv)
+
+        	// set data from loaded csv
+          var arr = csv.split(/\r\n|\n/)
+          const data = []
+          for (var i in arr) {
+            const row = arr[i].split(',')
+            data.push(row)
+          }
+          self.patientData = data
+
+          // create patients
+          const patients = []
+          for (var i in data) {
+            var row = data[i]
+            var sex = (row[2]=='1') ? 'M' : 'F'
+            var patient = {
+              id: row[0],
+              birth: row[1],
+              sex: sex,
+              depart: row[3],
+              year: row[4],
+              count: row[5],
+              from: row[6],
+              to: row[7],
+              death: row[9],
+              years: []
+            }
+
+            for (var j=10; j<42; j++) {
+              var cell = row[j]
+              if (cell > 0) {
+                var year = 0
+                if (j == 10) {
+                  year = 1978
+                } else if (j == 11) {
+                  year = 1983
+                } else if (j == 12) {
+                  year = 1984
+                } else if (j == 13) {
+                  year = 1990
+                } else {
+                  year = 1980 + j
+                }
+                //patient.years.push({ y:year, t:cell })
+                patient.years.push({ y: year, t: Math.floor(Math.random()*self.types.length) })
+              }
+            }
+
+            patients.push(patient)
+          }
+
+          //console.log('patients', patients)
+          self.patients = patients
+
+          self.loadBarChart()
+          self.loadColumnChart()
+          //self.loadScatterChart()
+        })
+      },
+      loadHeatMap () {
+        const self = this
+        anychart.onDocumentReady(function () {
+            //console.log('data', self.heatMapData)
+
+            //convert data
+            var data = []
+            for (var i in self.heatMapData) {
+
+              let row = self.heatMapData[i]
+              let year = row[0] + '年'
+              for (var j in row) {
+                let col = row[j]
+                if (j>0 && col) {
+                  let period = (j-1) + '年'
+                  data.push({x: period, y: year, heat: col})
+                }
+              }
+            }
+
+            // create a chart and set the data
+            chart = anychart.heatMap(data)
+
+            var colorScale = anychart.scales.ordinalColor();
+            // set color for all points
+            colorScale.ranges([
+              { less: 100, color: '#FFFDE7' },
+              { from: 100, to: 250, color: '#FFF9C4' },
+              { from: 250, to: 500, color: '#FFF59D' },
+              { from: 500, to: 750, color: '#FFE082' },
+              { from: 750, to: 1000, color: '#FFD54F' },
+              { from: 1000, to: 2500, color: '#FFCA28' },
+              { from: 2500, to: 5000, color: '#FFA726' },
+              { from: 5000, to: 7500, color: '#FB8C00' },
+              { from: 7500, to: 10000, color: '#F44336' },
+              { greater: 10000, color: '#E53935' }
+            ]);
+            chart.colorScale(colorScale);
+
+            // enable and configure scrollers
+            chart.xScroller().enabled(true);
+            chart.xZoom().setToPointsCount(27);
+            chart.yScroller().enabled(true);
+            chart.yZoom().setToPointsCount(27);
+
+            // listen
+            chart.listen('pointClick', function(e) {
+              self.selected.duration = e.iterator.get('x');
+              self.selected.year = e.iterator.get('y');
+              self.selected.count = e.iterator.get('heat');
+              //console.log(self.selected)
+
+              self.initPatients()
+            });
+
+            chart.title('患者の初回入院年度と継続年数のHeatMap');
+            chart.title().padding([0, 0, 5, 0]);
+
+            // set the container id
+            chart.container("heatMap")
+
+            // initiate drawing the chart
+            chart.draw()
+
+            self.heatMapChart = chart
+        })
+      },
+      loadBarChart () {
+
+        if (this.barChart) {
+          this.barChart.dispose()
+          this.barChart = null
+        }
+
+        const self = this
+        anychart.onDocumentReady(function () {
+            // create data for the first series
+            var patients = self.patients
+            var dataList = []
+            for (var i in self.types) {
+              dataList.push([])
+            }
+
+            var ranges = []
+            for (key in patients) {
+              const patient = patients[key]
+              ranges.push([key, patient.from, patient.to])
+              for (var i in patient.years) {
+                //const year = patient.years[i]
+                const cell = patient.years[i]
+                const type = cell['t']
+                const year = Math.floor(Math.random()*(2021-1995))+1995
+                dataList[type].push([key, year, year+1])
+              }
+            }
+
+            // create a chart
+            self.barChart = anychart.bar()
+
+            self.barChart.title('患者毎の入院年度（randomデータ）');
+            self.barChart.title().padding([0, 0, 5, 0]);
+
+            // set the padding between bars
+            self.barChart.barsPadding(-1)
+            // set the padding between bar groups
+            self.barChart.barGroupsPadding(1)
+
+            // turn on chart animation
+            var animationSettings = self.barChart.animation();
+            animationSettings.duration(1000);
+            animationSettings.enabled(true);
+
+            // create the first series (marker) and set the data
+            var series = self.barChart.rangeBar(ranges)
+            series.name('期間')
+            for (var i in self.types) {
+              var series = self.barChart.rangeBar(dataList[i])
+              series.name(self.types[i])
+            }
+
+            // set titles for axes
+            self.barChart.xAxis().title('患者番号');
+            self.barChart.yAxis().title('入院年度');
+
+            // scroller
+            self.barChart.xScroller().enabled(true);
+            self.barChart.xZoom().setToPointsCount(50, true);
+
+            // turn on legend
+            self.barChart.legend().enabled(true).fontSize(13).padding([0, 0, 20, 0]);
+
+            // set the container id
+            self.barChart.container("barChart")
+            // initiate drawing the chart
+            self.barChart.draw()
+        })
+      },
+      loadColumnChart () {
+
+        if (this.columnChart) {
+          this.columnChart.dispose()
+          this.columnChart = null
+        }
+
+        const self = this
+        anychart.onDocumentReady(function () {
+          // create a data set
+          //var data = anychart.data.set(self.patientData)
+          var groups = self.groupBy(self.patients, 'sex')
+
+          var groupsM = self.groupBy(groups['M'], 'birth')
+          var groupsF = self.groupBy(groups['F'], 'birth')
+          //console.log('groups', groups)
+
+          var dataM = []
+          for (key in groupsM) {
+            if (key !== 'undefined') {
+              const group = groupsM[key]
+              //data.push([key, group.length])
+              dataM.push([key, Math.floor(Math.random()*10) ])
+            }
+          }
+
+          var dataF = []
+          for (key in groupsF) {
+            if (key !== 'undefined') {
+              const group = groupsF[key]
+              //data.push([key, group.length])
+              dataF.push([key, Math.floor(Math.random()*10) ])
+            }
+          }
+
+          // create a chart
+          self.columnChart = anychart.column();
+
+          // set chart title text settings
+          self.columnChart.title('患者の年齢分布（randomデータ）');
+          self.columnChart.title().padding([0, 0, 5, 0]);
+
+          // force chart to stack values by Y scale.
+          self.columnChart.yScale().stackMode('value');
+
+          // turn on chart animation
+          var animationSettings = self.columnChart.animation();
+          animationSettings.duration(1000);
+          animationSettings.enabled(true);
+
+          // set the container id
+          self.columnChart.container("columnChart");
+
+          // helper function to setup label settings for all series
+          var setupSeriesLabels = function (series, name) {
+            series.name(name).stroke('3 #fff 1');
+            series.hovered().stroke('3 #fff 1');
+          };
+
+          // create a column series and set the data
+          var seriesM = self.columnChart.column(dataM);
+          seriesM.name('男性');
+          seriesM.fill('#2196F3')
+          seriesM.stroke('#BBDEFB')
+          var seriesF = self.columnChart.column(dataF);
+          seriesF.name('女性');
+          seriesF.fill('#E91E63')
+          seriesF.stroke('#F8BBD0')
+
+          // turn on legend
+          self.columnChart.legend().enabled(true).fontSize(13).padding([0, 0, 20, 0]);
+          // set yAxis labels formatter
+          //self.columnChart.yAxis().labels().format('{%Value}{groupsSeparator: }');
+
+          // set titles for axes
+          self.columnChart.xAxis().title('患者生年月日');
+          self.columnChart.yAxis().title('入院患者数');
+
+          // initiate drawing the chart
+          self.columnChart.draw();
+        })
+      },
+      loadScatterChart () {
+
+        if (this.scatterChart) {
+          this.scatterChart.dispose()
+          this.scatterChart = null
+        }
+
+        const self = this
+        anychart.onDocumentReady(function () {
+          // create data for the first series
+          var patients = self.patients
+          var dataList = []
+          for (var i in self.types) {
+            dataList.push([])
+          }
+
+          for (key in patients) {
+            const patient = patients[key]
+            for (var i in patient.years) {
+              //const year = patient.years[i]
+              const cell = patient.years[i]
+              const type = cell['t']
+              const year = Math.floor(Math.random()*(2021-1995))+1995
+              dataList[type].push({x: year, value: key})
+            }
+          }
+
+          // create a chart
+          self.scatterChart = anychart.scatter();
+
+          self.scatterChart.title('患者毎の入院年度（randomデータ）');
+          self.scatterChart.title().padding([0, 0, 5, 0]);
+
+          // turn on chart animation
+          var animationSettings = self.scatterChart.animation();
+          animationSettings.duration(1000);
+          animationSettings.enabled(true);
+
+          // create the first series (marker) and set the data
+          for (var i in self.types) {
+            var series = self.scatterChart.marker(dataList[i]).size(3)
+            series.name(self.types[i])
+          }
+
+          // turn on legend
+          self.scatterChart.legend().enabled(true).fontSize(13).padding([0, 0, 20, 0]);
+
+          // set titles for axes
+          self.scatterChart.xAxis().title('入院年度');
+          self.scatterChart.yAxis().title('患者');
+
+          // set the container id
+          self.scatterChart.container("scatterChart");
+
+          // initiate drawing the chart
+          self.scatterChart.draw();
+        })
+      },
+      heatMapClick(event) {
+        //console.log('event', event)
+        //console.log('selected', this.heatMapChart.selected())
+      },
+      groupBy(xs, key) {
+        return xs.reduce(function(rv, x) {
+          (rv[x[key]] = rv[x[key]] || []).push(x);
+          return rv;
+        }, {});
+      }
+    }
+  })
+  </script>
+</body>
+</html>
