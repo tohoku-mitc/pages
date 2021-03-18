@@ -21,7 +21,9 @@
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.17.1/axios.js"></script>
 
   <style id="compiled-css" type="text/css">
-    /* add style here */
+    .clickable {
+      cursor: pointer;
+    }
   </style>
 
 </head>
@@ -30,13 +32,21 @@
     <v-container fluid>
       <v-row no-gutters>
         <v-col
-          cols="8"
+          :cols="showDetail ? 8 : 12"
           style="min-width: 600px;"
           class="flex-grow-1 flex-shrink-0"
           >
           <div id="heatMap" style="height:900px;" @click="heatMapClick"></div>
+          <v-btn fixed fab bottom right
+            @click="showDetail=!showDetail"
+            class="clickable"
+            style="bottom: 20px">
+              <v-icon v-show="!showDetail">mdi-chevron-right</v-icon>
+              <v-icon v-show="showDetail">mdi-chevron-left</v-icon>
+          </v-btn>
         </v-col>
         <v-col
+          v-if="showDetail"
           cols="4"
           style="min-width: 100px;"
           class="flex-grow-0 flex-shrink-1"
@@ -95,7 +105,8 @@
           duration: null,
           year: null,
           count: 0
-        }
+        },
+        showDetail: false
       }
     },
     computed: {
@@ -106,6 +117,7 @@
     },
     methods: {
       initPatients () {
+        this.showDetail = true
         const url = "https://tohoku-mitc.github.io/pages/test/patient-data.csv"
         const self = this
         anychart.data.loadCsvFile(url, function (csv) {
@@ -211,7 +223,7 @@
             // enable and configure scrollers
             chart.xScroller().enabled(true);
             chart.xZoom().setToPointsCount(27);
-            chart.yScroller().enabled(true);
+            //chart.yScroller().enabled(true);
             chart.yZoom().setToPointsCount(27);
 
             // listen
