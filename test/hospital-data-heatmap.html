@@ -52,8 +52,10 @@
           class="flex-grow-0 flex-shrink-1"
           >
           <div id="columnChart" style="height:320px;"></div>
+          <div id="columnChart2" style="height:320px;"></div>
+          <div id="pieChart" style="height:320px;"></div>
           <!-- <div id="scatterChart" style="height:600px;"></div> -->
-          <div id="barChart" style="height:600px;"></div>
+          <!-- <div id="barChart" style="height:600px;"></div> -->
         </v-col>
       </v-row>
     </v-container>
@@ -96,9 +98,16 @@
         ],
         patientData: [],
         patients: [],
+        result: [],
+        groups: [],
+        groupsM: [],
+        groupsF: [],
+        countGroups: [],
         types:['循環器','消化器','脳','皮膚科'],
         heatMapChart: null,
         columnChart: null,
+        columnChart2: null,
+        pieChart: null,
         scatterChart: null,
         barChart: null,
         selected: {
@@ -114,11 +123,12 @@
     },
     mounted() {
       this.loadHeatMap()
+      this.initPatients()
     },
     methods: {
       initPatients () {
         this.showDetail = true
-        const url = "https://tohoku-mitc.github.io/pages/test/patient-data.csv"
+        const url = "https://tohoku-mitc.github.io/pages/test/patient-data3.csv"
         const self = this
         anychart.data.loadCsvFile(url, function (csv) {
           //console.log('csv', csv)
@@ -136,50 +146,52 @@
           const patients = []
           for (var i in data) {
             var row = data[i]
-            var sex = (row[2]=='1') ? 'M' : 'F'
+            var sex = (row[0]=='1') ? 'M' : 'F'
+            var duration = (row[2]) ? Number(row[2]) : 0
             var patient = {
-              id: row[0],
-              birth: row[1],
               sex: sex,
-              depart: row[3],
-              year: row[4],
-              count: row[5],
-              from: row[6],
-              to: row[7],
-              death: row[9],
-              years: []
+              birth: Number(row[1].trim()),
+              duration: duration,
+              count: Number(row[3])
             }
-
-            for (var j=10; j<42; j++) {
-              var cell = row[j]
-              if (cell > 0) {
-                var year = 0
-                if (j == 10) {
-                  year = 1978
-                } else if (j == 11) {
-                  year = 1983
-                } else if (j == 12) {
-                  year = 1984
-                } else if (j == 13) {
-                  year = 1990
-                } else {
-                  year = 1980 + j
-                }
-                //patient.years.push({ y:year, t:cell })
-                patient.years.push({ y: year, t: Math.floor(Math.random()*self.types.length) })
-              }
+            if (i > 0) {
+              patients.push(patient)
             }
-
-            patients.push(patient)
           }
-
           //console.log('patients', patients)
           self.patients = patients
-
-          self.loadBarChart()
-          self.loadColumnChart()
-          //self.loadScatterChart()
         })
+      },
+      filterPatients () {
+        // create a data set
+        const self = this
+        this.result = this.patients.filter( function( item ) {
+          return item.duration >= self.selected.duration
+        })
+        if (this.result) {
+          //console.log('this.result', this.result)
+          this.groups = this.groupBy(this.result, 'sex')
+
+          if (this.groups['M']) {
+            this.groupsM = this.groupBy(this.groups['M'], 'birth')
+          } else {
+            this.groupsM = null
+          }
+
+          if (this.groups['F']) {
+            this.groupsF = this.groupBy(this.groups['F'], 'birth')
+          } else {
+            this.groupsF = null
+          }
+
+          this.countGroups = this.groupBy(this.result, 'count')
+
+        } else {
+          this.groups = null
+          this.groupsM = null
+          this.groupsF = null
+          this.countGroups = null
+        }
       },
       loadHeatMap () {
         const self = this
@@ -195,7 +207,7 @@
               for (var j in row) {
                 let col = row[j]
                 if (j>0 && col) {
-                  let period = (j-1) + '年'
+                  let period = (j-1)
                   data.push({x: period, y: year, heat: col})
                 }
               }
@@ -233,7 +245,12 @@
               self.selected.count = e.iterator.get('heat');
               //console.log(self.selected)
 
-              self.initPatients()
+              self.filterPatients()
+              //self.loadBarChart()
+              self.loadColumnChart()
+              self.loadColumnChart2()
+              self.loadPieChart()
+              //self.loadScatterChart()
             });
 
             chart.title('患者の初回入院年度と継続年数のHeatMap');
@@ -248,116 +265,50 @@
             self.heatMapChart = chart
         })
       },
-      loadBarChart () {
-
-        if (this.barChart) {
-          this.barChart.dispose()
-          this.barChart = null
-        }
-
-        const self = this
-        anychart.onDocumentReady(function () {
-            // create data for the first series
-            var patients = self.patients
-            var dataList = []
-            for (var i in self.types) {
-              dataList.push([])
-            }
-
-            var ranges = []
-            for (key in patients) {
-              const patient = patients[key]
-              ranges.push([key, patient.from, patient.to])
-              for (var i in patient.years) {
-                //const year = patient.years[i]
-                const cell = patient.years[i]
-                const type = cell['t']
-                const year = Math.floor(Math.random()*(2021-1995))+1995
-                dataList[type].push([key, year, year+1])
-              }
-            }
-
-            // create a chart
-            self.barChart = anychart.bar()
-
-            self.barChart.title('患者毎の入院年度（randomデータ）');
-            self.barChart.title().padding([0, 0, 5, 0]);
-
-            // set the padding between bars
-            self.barChart.barsPadding(-1)
-            // set the padding between bar groups
-            self.barChart.barGroupsPadding(1)
-
-            // turn on chart animation
-            var animationSettings = self.barChart.animation();
-            animationSettings.duration(1000);
-            animationSettings.enabled(true);
-
-            // create the first series (marker) and set the data
-            var series = self.barChart.rangeBar(ranges)
-            series.name('期間')
-            for (var i in self.types) {
-              var series = self.barChart.rangeBar(dataList[i])
-              series.name(self.types[i])
-            }
-
-            // set titles for axes
-            self.barChart.xAxis().title('患者番号');
-            self.barChart.yAxis().title('入院年度');
-
-            // scroller
-            self.barChart.xScroller().enabled(true);
-            self.barChart.xZoom().setToPointsCount(50, true);
-
-            // turn on legend
-            self.barChart.legend().enabled(true).fontSize(13).padding([0, 0, 20, 0]);
-
-            // set the container id
-            self.barChart.container("barChart")
-            // initiate drawing the chart
-            self.barChart.draw()
-        })
-      },
       loadColumnChart () {
-
         if (this.columnChart) {
           this.columnChart.dispose()
           this.columnChart = null
         }
+        if (!this.groups) return
 
         const self = this
         anychart.onDocumentReady(function () {
-          // create a data set
-          //var data = anychart.data.set(self.patientData)
-          var groups = self.groupBy(self.patients, 'sex')
+          //console.log('duration', self.selected.duration)
 
-          var groupsM = self.groupBy(groups['M'], 'birth')
-          var groupsF = self.groupBy(groups['F'], 'birth')
-          //console.log('groups', groups)
-
-          var dataM = []
-          for (key in groupsM) {
-            if (key !== 'undefined') {
-              const group = groupsM[key]
-              //data.push([key, group.length])
-              dataM.push([key, Math.floor(Math.random()*10) ])
+          var sortedViewM = null
+          if (self.groupsM) {
+            var dataM = []
+            for (key in self.groupsM) {
+              if (key) {
+                const group = self.groupsM[key]
+                dataM.push([key, group.length])
+              }
             }
+            var dataSetM = anychart.data.set(dataM)
+            var viewM = dataSetM.mapAs()
+            sortedViewM = viewM.sort("x","desc")
           }
 
-          var dataF = []
-          for (key in groupsF) {
-            if (key !== 'undefined') {
-              const group = groupsF[key]
-              //data.push([key, group.length])
-              dataF.push([key, Math.floor(Math.random()*10) ])
+          var sortedViewF = null
+          if (self.groupsF) {
+            var dataF = []
+            for (key in self.groupsF) {
+              if (key) {
+                const group = self.groupsF[key]
+                dataF.push([key, group.length])
+              }
             }
+            var dataSetF = anychart.data.set(dataF)
+            var viewF = dataSetF.mapAs()
+            sortedViewF = viewF.sort("x","desc")
           }
 
           // create a chart
           self.columnChart = anychart.column();
 
           // set chart title text settings
-          self.columnChart.title('患者の年齢分布（randomデータ）');
+          self.columnChart.title('出生年度ごとの患者数');
           self.columnChart.title().padding([0, 0, 5, 0]);
 
           // force chart to stack values by Y scale.
@@ -378,14 +329,19 @@
           };
 
           // create a column series and set the data
-          var seriesM = self.columnChart.column(dataM);
-          seriesM.name('男性');
-          seriesM.fill('#2196F3')
-          seriesM.stroke('#BBDEFB')
-          var seriesF = self.columnChart.column(dataF);
-          seriesF.name('女性');
-          seriesF.fill('#E91E63')
-          seriesF.stroke('#F8BBD0')
+          if (sortedViewM) {
+          var seriesM = self.columnChart.column(sortedViewM);
+            seriesM.name('男性');
+            seriesM.fill('#2196F3')
+            seriesM.stroke('#BBDEFB')
+          }
+
+          if (sortedViewF) {
+            var seriesF = self.columnChart.column(sortedViewF);
+            seriesF.name('女性');
+            seriesF.fill('#E91E63')
+            seriesF.stroke('#F8BBD0')
+          }
 
           // turn on legend
           self.columnChart.legend().enabled(true).fontSize(13).padding([0, 0, 20, 0]);
@@ -393,69 +349,149 @@
           //self.columnChart.yAxis().labels().format('{%Value}{groupsSeparator: }');
 
           // set titles for axes
-          self.columnChart.xAxis().title('患者生年月日');
-          self.columnChart.yAxis().title('入院患者数');
+          self.columnChart.xAxis().title('患者出生年度');
+          self.columnChart.yAxis().title('患者数');
 
           // initiate drawing the chart
           self.columnChart.draw();
         })
       },
-      loadScatterChart () {
-
-        if (this.scatterChart) {
-          this.scatterChart.dispose()
-          this.scatterChart = null
+      // 出生年度ごとの入院回数
+      loadColumnChart2 () {
+        if (this.columnChart2) {
+          this.columnChart2.dispose()
+          this.columnChart2 = null
         }
+        if (!this.groups) return
 
         const self = this
         anychart.onDocumentReady(function () {
-          // create data for the first series
-          var patients = self.patients
-          var dataList = []
-          for (var i in self.types) {
-            dataList.push([])
+          //console.log('duration', self.selected.duration)
+
+          var sortedViewM = null
+          if (self.groupsM) {
+            var dataM = []
+            for (key in self.groupsM) {
+              if (key) {
+                const group = self.groupsM[key]
+                let total = group.reduce(function(sum, item){
+                  return sum + item.count
+                }, 0)
+                dataM.push([key, total])
+              }
+            }
+            var dataSetM = anychart.data.set(dataM)
+            var viewM = dataSetM.mapAs()
+            sortedViewM = viewM.sort("x","desc")
           }
 
-          for (key in patients) {
-            const patient = patients[key]
-            for (var i in patient.years) {
-              //const year = patient.years[i]
-              const cell = patient.years[i]
-              const type = cell['t']
-              const year = Math.floor(Math.random()*(2021-1995))+1995
-              dataList[type].push({x: year, value: key})
+          var sortedViewF = null
+          if (self.groupsF) {
+            var dataF = []
+            for (key in self.groupsF) {
+              if (key) {
+                const group = self.groupsF[key]
+                let total = group.reduce(function(sum, item){
+                  return sum + item.count
+                }, 0)
+                dataF.push([key, total])
+              }
             }
+            var dataSetF = anychart.data.set(dataF)
+            var viewF = dataSetF.mapAs()
+            sortedViewF = viewF.sort("x","desc")
           }
 
           // create a chart
-          self.scatterChart = anychart.scatter();
+          self.columnChart2 = anychart.column();
 
-          self.scatterChart.title('患者毎の入院年度（randomデータ）');
-          self.scatterChart.title().padding([0, 0, 5, 0]);
+          // set chart title text settings
+          self.columnChart2.title('出生年度ごとの入院回数');
+          self.columnChart2.title().padding([0, 0, 5, 0]);
+
+          // force chart to stack values by Y scale.
+          self.columnChart2.yScale().stackMode('value');
 
           // turn on chart animation
-          var animationSettings = self.scatterChart.animation();
+          var animationSettings = self.columnChart2.animation();
           animationSettings.duration(1000);
           animationSettings.enabled(true);
 
-          // create the first series (marker) and set the data
-          for (var i in self.types) {
-            var series = self.scatterChart.marker(dataList[i]).size(3)
-            series.name(self.types[i])
+          // set the container id
+          self.columnChart2.container("columnChart2");
+
+          // helper function to setup label settings for all series
+          var setupSeriesLabels = function (series, name) {
+            series.name(name).stroke('3 #fff 1');
+            series.hovered().stroke('3 #fff 1');
+          };
+
+          // create a column series and set the data
+          if (sortedViewM) {
+          var seriesM = self.columnChart2.column(sortedViewM);
+            seriesM.name('男性');
+            seriesM.fill('#2196F3')
+            seriesM.stroke('#BBDEFB')
+          }
+
+          if (sortedViewF) {
+            var seriesF = self.columnChart2.column(sortedViewF);
+            seriesF.name('女性');
+            seriesF.fill('#E91E63')
+            seriesF.stroke('#F8BBD0')
           }
 
           // turn on legend
-          self.scatterChart.legend().enabled(true).fontSize(13).padding([0, 0, 20, 0]);
+          self.columnChart2.legend().enabled(true).fontSize(13).padding([0, 0, 20, 0]);
+          // set yAxis labels formatter
+          //self.columnChart2.yAxis().labels().format('{%Value}{groupsSeparator: }');
 
           // set titles for axes
-          self.scatterChart.xAxis().title('入院年度');
-          self.scatterChart.yAxis().title('患者');
-
-          // set the container id
-          self.scatterChart.container("scatterChart");
+          self.columnChart2.xAxis().title('患者出生年度');
+          self.columnChart2.yAxis().title('患者入院回数');
 
           // initiate drawing the chart
-          self.scatterChart.draw();
+          self.columnChart2.draw();
+        })
+      },
+      // 入院回数ごとの患者人数
+      loadPieChart () {
+        if (this.pieChart) {
+          this.pieChart.dispose()
+          this.pieChart = null
+        }
+        if (!this.countGroups) return
+
+        const self = this
+        anychart.onDocumentReady(function () {
+          //console.log('duration', self.selected.duration)
+
+          var data = []
+          for (var key in self.countGroups) {
+            const group = self.countGroups[key]
+            data.push({x:key+'回', value:group.length})
+          }
+
+          // create a chart
+          self.pieChart = anychart.pie(data);
+
+          // set chart title text settings
+          self.pieChart.title('入院回数ごとの人数割合');
+          self.pieChart.title().padding([0, 0, 5, 0]);
+
+          // turn on chart animation
+          var animationSettings = self.pieChart.animation();
+          animationSettings.duration(1000);
+          animationSettings.enabled(true);
+
+          // set the container id
+          self.pieChart.container("pieChart");
+
+          // turn on legend
+          self.pieChart.legend().enabled(true).fontSize(13).padding([0, 0, 20, 0]).position("top")
+
+          // initiate drawing the chart
+          self.pieChart.draw();
         })
       },
       heatMapClick(event) {
