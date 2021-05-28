@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>questionnaire form</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="googlebot" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.20.0/vis.min.js" integrity="sha512-CFZV2b4rQq36cxk/HnXzgNxvDJlasmPCZEyrOuLk5oSkLCpw5Ni5LCD9HzFQ96DgE+xd855/HvkRfeK67QOFJw==" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.17.1/axios.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue-qriously@1.1.1/dist/vue-qriously.min.js"></script>
+
+  <style id="compiled-css" type="text/css">
+  .container {
+    display: flex;
+    overflow-x: auto;
+  }
+  </style>
+
+</head>
+<body>
+  <div id="app">
+    <v-container>
+      <v-row align="center" justify="center">
+        <v-col md="6">
+          <h1>{{ title }}</h1>
+        </v-col>
+      </v-row>
+    </v-container>
+    <v-form
+      ref="form"
+      v-model="valid"
+      lazy-validation
+    >
+      <v-container
+        v-for="(card, cardIndex) in cards"
+        :key="cardIndex"
+        class="grey lighten-5"
+      >
+        <v-row
+          v-if="card.type=='textInput'"
+          no-gutters
+        >
+          <v-col md="6">
+            <v-text-field
+              v-model="card.value"
+              :counter="card.counter"
+              :rules="card.rules"
+              :label="card.label"
+              required
+            >
+            </v-text-field>
+          </v-col>
+        </v-row>
+        <v-row
+          v-if="card.type=='radioGroup'"
+          no-gutters
+        >
+          <v-col md="6">
+            <b> {{ card.label }} </b>
+            <table width="100%">
+              <tr
+                v-for="(item, itemIndex) in card.items"
+                :key="itemIndex"
+              >
+                <td align="left">
+                  {{ item.label }}
+                </td>
+                <td align="right">
+                  <v-radio-group
+                    v-model="item.value"
+                    row
+                  >
+                    <v-radio
+                      v-for="(radio, radioIndex) in card.radios"
+                      :key="radioIndex"
+                      :label="radio"
+                      :value="radioIndex"
+                    ></v-radio>
+                  </v-radio-group>
+                  <v-rating
+                    v-if="card.rating && item.value>0"
+                    dense
+                    v-model="item.value"
+                    length="10"
+                    size="24"
+                    color="red lighten-3"
+                    background-color="grey lighten-1"
+                    empty-icon="mdi-circle-outline"
+                    full-icon="mdi-circle"
+                  ></v-rating>
+                </td>
+              </tr>
+            </table>
+          </v-col>
+        </v-row>
+        <v-row
+          v-if="card.type=='radio'"
+          no-gutters
+        >
+          <v-col md="6">
+            <b> {{ card.label }} </b>
+            <v-radio-group
+              v-model="card.value"
+            >
+              <v-radio
+                v-for="(radio, radioIndex) in card.radios"
+                :key="radioIndex"
+                :label="radio"
+                :value="radioIndex"
+              ></v-radio>
+            </v-radio-group>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-form>
+    <v-container>
+      <v-row align="center" justify="center">
+        <v-col md="6">
+          <v-btn
+            :disabled="!valid"
+            width="100%"
+            @click="overlay = true"
+          >
+            <b> QRコードを表示 </b>
+          </v-btn>
+        </v-col>
+      </v-row>
+    </v-container>
+    <v-container>
+      <v-row align="center" justify="center">
+        <v-col md="6">
+          <v-overlay
+            :z-index="zIndex"
+            :value="overlay"
+            opacity="0.9"
+            color="#ffffff"
+          >
+            <v-row align="center" justify="center">
+              <qriously
+                class="text-center"
+                :value="result"
+                :size="260"
+              />
+            </v-row>
+            <v-row>
+              <br>
+            </v-row>
+            <v-row align="center" justify="center">
+              <v-btn
+                width="100%"
+                @click="overlay = false"
+              >
+                入力画面へ戻る
+              </v-btn>
+            </v-row>
+          </v-overlay>
+        </v-col>
+      </v-row>
+    </v-container>
+    <br>
+  </div>
+  <script>
+
+  Vue.use(window['vue-qriously'])
+  var app = new Vue({
+  	el: '#app',
+    vuetify: new Vuetify(),
+  	data() {
+    	return {
+        title: '新型コロナウィルス感染症軽症者等の健康観察票',
+        valid: true,
+        overlay: false,
+        zIndex: 0,
+        cards: [
+          {
+            type: 'textInput',
+            label: '管理番号を入力してください ',
+            value: null,
+            rules: [v => !!v || '必須項目です', v => (v && v.length == 4) || '管理番号（4桁）を入力してください'],
+            counter: 4
+          },
+          {
+            type: 'textInput',
+            label: '検温結果を入力してください　（　　℃）',
+            value: null,
+            rules: [v => !!v || '必須項目です', v => (v && v.length == 4) || '小数点以下１桁まで入力してください（例：36.5）'],
+            counter: 4
+          },
+          {
+            type: 'textInput',
+            label: 'Sp02（酸素飽和度）結果を入力してください（　　％）',
+            value: null,
+            rules: [v => !!v || '必須項目です'],
+            counter: null
+          },
+          {
+            type: 'textInput',
+            label: '脈拍を入力してください（　　回）',
+            value: null,
+            rules: [v => !!v || '必須項目です'],
+            counter: null
+          },
+          {
+            type: 'radioGroup',
+            label: '体調についてお答えください',
+            radios:['なし', 'あり'],
+            rating: 10,
+            items: [
+              {label: '咳', value: null},
+              {label: '痰', value: null},
+              {label: '息苦しさ', value: null},
+              {label: '全身の倦怠感', value: null},
+              {label: '吐き気、嘔吐', value: null},
+              {label: '下痢', value: null},
+              {label: '鼻水', value: null},
+              {label: '鼻づまり', value: null},
+              {label: 'のどの痛み', value: null},
+              {label: '頭痛', value: null},
+              {label: '関節筋肉痛', value: null},
+              {label: '味覚障害', value: null},
+              {label: '嗅覚障害', value: null}
+            ]
+          },
+          {
+            type: 'radioGroup',
+            label: 'その他',
+            radios:['良好', '普通', '悪い'],
+            rating: null,
+            items: [
+              {label: '睡眠', value: null},
+              {label: '食欲', value: null},
+              {label: '排尿', value: null},
+              {label: '排便', value: null}
+            ]
+          },
+          {
+            type: 'radio',
+            label: '持参薬は服用しましたか',
+            value: null,
+            radios:['はい', 'いいえ', '持参薬はない']
+          },
+          {
+            type: 'radio',
+            label: '解熱・鎮痛剤を服用しましたか',
+            value: null,
+            radios:['はい', 'いいえ']
+          }
+        ]
+      }
+    },
+    computed: {
+      result () {
+        let results = []
+        this.cards.forEach((card, i) => {
+          if (card.items) {
+            card.items.forEach((item, i) => {
+              results.push(item.value)
+            })
+          } else {
+            results.push(card.value)
+          }
+        })
+        console.log(results.join('/'))
+        return results.join('/')
+      }
+    },
+    mounted() {
+      //
+    },
+    methods: {
+      // how to
+      // https://www.kabanoki.net/4494/
+      // sample source
+      // https://jsfiddle.net/kabanoki/s6k4Lrxp/
+      // other choices
+      // https://github.com/fengyuanchen/vue-qrcode
+      // https://github.com/superman66/vue-qart
+      validate () {
+        //
+      },
+      overlayClicked () {
+        console.log('overlayClicked')
+      }
+    }
+  })
+  </script>
+</body>
+</html>
