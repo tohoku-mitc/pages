@@ -9,9 +9,9 @@
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="robots" content="noindex, nofollow">
   <meta name="googlebot" content="noindex, nofollow">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.20.0/vis.min.js" integrity="sha512-CFZV2b4rQq36cxk/HnXzgNxvDJlasmPCZEyrOuLk5oSkLCpw5Ni5LCD9HzFQ96DgE+xd855/HvkRfeK67QOFJw==" crossorigin="anonymous"></script>
@@ -19,9 +19,9 @@
   <script src="https://cdn.jsdelivr.net/npm/vue-qriously@1.1.1/dist/vue-qriously.min.js"></script>
 
   <style id="compiled-css" type="text/css">
-  .container {
-    display: flex;
-    overflow-x: auto;
+  .v-text-field input {
+    font-size: 1.4em;
+    text-align: center;
   }
   </style>
 
@@ -43,7 +43,6 @@
       <v-container
         v-for="(card, cardIndex) in cards"
         :key="cardIndex"
-        class="grey lighten-5"
       >
         <v-row
           v-if="card.type=='textInput'"
@@ -65,7 +64,8 @@
           no-gutters
         >
           <v-col md="6">
-            <b> {{ card.label }} </b>
+            <b> {{ card.label }} </b><br>
+            <small v-if="card.rating">症状がある場合は、症状の強さ０〜１０を選択してください</small>
             <table width="100%">
               <tr
                 v-for="(item, itemIndex) in card.items"
@@ -125,6 +125,7 @@
     <v-container>
       <v-row align="center" justify="center">
         <v-col md="6">
+          <small v-if="!valid">未入力もしくは入力間違いの項目があります。</small>
           <v-btn
             :disabled="!valid"
             width="100%"
@@ -177,7 +178,7 @@
   	data() {
     	return {
         title: '新型コロナウィルス感染症軽症者等の健康観察票',
-        valid: true,
+        valid: false,
         overlay: false,
         zIndex: 0,
         cards: [
