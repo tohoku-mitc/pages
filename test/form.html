@@ -186,19 +186,23 @@
     },
     computed: {
       result () {
-        let results = []
-        this.cards.forEach((card, i) => {
-          if (card.items) {
-            card.items.forEach((item, i) => {
-              results.push(item.value)
-            })
-          } else {
-            results.push(card.value)
-          }
-        })
-        const result = '/' + results.join('/') + '/' + this.currentTime + '/'
-        console.log(result)
-        return result
+        if (cards) {
+          let results = []
+          this.cards.forEach((card, i) => {
+            if (card.items) {
+              card.items.forEach((item, i) => {
+                results.push(item.value)
+              })
+            } else {
+              results.push(card.value)
+            }
+          })
+          const result = '/' + results.join('/') + '/' + this.currentTime + '/'
+          console.log(result)
+          return result
+        } else {
+          return ''
+        }
       },
       // 現在時刻取得（yyyy/mm/dd hh:mm:ss）
       currentTime () {
