@@ -227,7 +227,7 @@
         //var requestUrl = this.selectedUrl
         axios.get(requestUrl).then((response) => {
             const data = response.data
-            console.log(data)
+            console.log(data.title)
             this.title = data.title
             this.cards = data.cards
             this.$forceUpdate()
