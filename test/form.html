@@ -186,7 +186,7 @@
     },
     computed: {
       result () {
-        if (cards) {
+        if (this.cards) {
           let results = []
           this.cards.forEach((card, i) => {
             if (card.items) {
