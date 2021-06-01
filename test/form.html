@@ -230,7 +230,7 @@
             console.log(data)
             this.title = data.title
             this.cards = data.cards
-
+            this.$forceUpdate()
           }).catch(function (error) {
             // handle error
             var status = ""
