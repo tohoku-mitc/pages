@@ -36,6 +36,7 @@
     {
       "type": "radio",
       "label": "現在の便の状態",
+      "layout": "row",
       "value": null,
       "counter": 4,
       "radios": ["硬便", "普通便", "軟便", "水様便"]
@@ -52,12 +53,14 @@
     {
       "type": "radio",
       "label": "最近１週間の血便",
+      "layout": "row",
       "value": null,
       "radios": ["なし", "少量", "多量"]
     },
     {
       "type": "radio",
       "label": "腹痛",
+      "layout": "row",
       "value": null,
       "radios": ["なし", "軽度", "中等度", "高度"]
     },

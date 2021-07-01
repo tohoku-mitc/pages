@@ -109,6 +109,7 @@
             <b> {{ card.label }} </b>
             <v-radio-group
               v-model="card.value"
+              row="card.layout=='row'"
             >
               <v-radio
                 v-for="(radio, radioIndex) in card.radios"
