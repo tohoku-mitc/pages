@@ -10,7 +10,9 @@
       "label": "身長を入力してください　（　　cm）",
       "value": null,
       "counter": 4,
-      "multiplier": 0.1
+      "multiplier": 0.1,
+      "$comment": "counter=4 QR文字列4桁(デフォルト値=1)",
+      "$comment": "multiplier=0.1 小数点以下1桁(デフォルト値=1)"
     },
     {
       "type": "textInput",
