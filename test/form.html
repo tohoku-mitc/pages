@@ -180,7 +180,8 @@
         valid: true,
         overlay: false,
         zIndex: 0,
-        format: null
+        format: null,
+        cards: null
       }
     },
     computed: {
@@ -188,9 +189,9 @@
         if (this.format) {
           const codeFunction = this.format.codeFunction
           if (codeFunction === 'fixedString') {
-            return fixedString()
+            return this.fixedString()
           } else {
-            return splitString()
+            return this.splitString()
           }
         } else {
           return ''
@@ -200,11 +201,11 @@
       currentTime () {
         const now = new Date()
         const res = '' + now.getFullYear() +
-          '-' + this.padZero(now.getMonth() + 1) +
-          '-' + this.padZero(now.getDate()) +
-          'T' + this.padZero(now.getHours()) +
-          ':' + this.padZero(now.getMinutes()) +
-          ':' + this.padZero(now.getSeconds())
+          '-' + this.padZero(now.getMonth() + 1, 2) +
+          '-' + this.padZero(now.getDate(), 2) +
+          'T' + this.padZero(now.getHours(), 2) +
+          ':' + this.padZero(now.getMinutes(), 2) +
+          ':' + this.padZero(now.getSeconds(), 2)
         return res
       }
     },
@@ -224,6 +225,7 @@
             const data = response.data
             console.log(data.title)
             this.format = data
+            this.cards = data.cards
             this.title = data.title
             // this.$forceUpdate()
           }).catch(function (error) {
@@ -245,7 +247,7 @@
       },
       splitString () {
         let results = []
-        this.format.cards.forEach((card, i) => {
+        this.cards.forEach((card, i) => {
           if (card.items) {
             card.items.forEach((item, i) => {
               results.push(item.value)
@@ -260,16 +262,24 @@
       },
       fixedString () {
         let results = []
-        this.format.cards.forEach((card, i) => {
+        this.cards.forEach((card, i) => {
           if (card.items) {
             card.items.forEach((item, i) => {
-              results.push(item.value)
+              const multiplier = item.multiplier ? item.multiplier : 1
+              const counter = item.counter ? item.counter : 1
+              const num = item.value / multiplier
+              const str = this.padZero(num, counter)
+              results.push(str)
             })
           } else {
-            results.push(card.value)
+            const multiplier = card.multiplier ? card.multiplier : 1
+            const counter = card.counter ? card.counter : 1
+            const num = card.value / multiplier
+            const str = this.padZero(num, counter)
+            results.push(str)
           }
         })
-        const result = '/' + results.join('/') + '/' + this.currentTime + '/'
+        const result = results.join('')
         console.log(result)
         return result
       },
@@ -287,12 +297,17 @@
         console.log('overlayClicked')
       },
       // 先頭ゼロ付加
-      padZero (num) {
+      padZero (number, length) {
         let result
-        if (num < 10) {
-          result = '0' + num
+        const num = number ? number : 0
+        const str = String(Math.round(num))
+        const diff = length - str.length
+        if (diff > 0) {
+          result = '0'.repeat(diff) + str
+        } if (diff < 0) {
+          result = str.slice( -1 * length )
         } else {
-          result = '' + num
+          result = str
         }
         return result
       }

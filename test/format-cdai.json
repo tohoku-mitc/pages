@@ -9,13 +9,15 @@
       "type": "textInput",
       "label": "身長を入力してください　（　　cm）",
       "value": null,
-      "counter": 4
+      "counter": 4,
+      "multiplier": 0.1
     },
     {
       "type": "textInput",
       "label": "体重を入力してください　（　　kg）",
       "value": null,
-      "counter": 4
+      "counter": 4,
+      "multiplier": 0.1
     },
     {
       "type": "textInput",
