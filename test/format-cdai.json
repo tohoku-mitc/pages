@@ -1,18 +1,19 @@
 {
   "title": "クローン病患者の健康観察票",
-  "valid": false,
-  "overlay": false,
-  "zIndex": 0,
+  "codeFunction": "fixedString",
+  "appCode": "8",
+  "formatCode": "01",
+  "versionCode": "01",
   "cards": [
     {
       "type": "textInput",
-      "label": "管理番号を入力してください ",
+      "label": "身長を入力してください　（　　cm）",
       "value": null,
       "counter": 4
     },
     {
       "type": "textInput",
-      "label": "身長を入力してください　（　　cm）",
+      "label": "体重を入力してください　（　　kg）",
       "value": null,
       "counter": 4
     },

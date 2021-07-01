@@ -180,25 +180,18 @@
         valid: true,
         overlay: false,
         zIndex: 0,
-        cards: null
+        format: null
       }
     },
     computed: {
       result () {
-        if (this.cards) {
-          let results = []
-          this.cards.forEach((card, i) => {
-            if (card.items) {
-              card.items.forEach((item, i) => {
-                results.push(item.value)
-              })
-            } else {
-              results.push(card.value)
-            }
-          })
-          const result = '/' + results.join('/') + '/' + this.currentTime + '/'
-          console.log(result)
-          return result
+        if (this.format) {
+          const codeFunction = this.format.codeFunction
+          if (codeFunction === 'fixedString') {
+            return fixedString()
+          } else {
+            return splitString()
+          }
         } else {
           return ''
         }
@@ -230,8 +223,8 @@
         axios.get(requestUrl).then((response) => {
             const data = response.data
             console.log(data.title)
+            this.format = data
             this.title = data.title
-            this.cards = data.cards
             // this.$forceUpdate()
           }).catch(function (error) {
             // handle error
@@ -249,6 +242,36 @@
           }).finally(function () {
             // always executed
           });
+      },
+      splitString () {
+        let results = []
+        this.format.cards.forEach((card, i) => {
+          if (card.items) {
+            card.items.forEach((item, i) => {
+              results.push(item.value)
+            })
+          } else {
+            results.push(card.value)
+          }
+        })
+        const result = '/' + results.join('/') + '/' + this.currentTime + '/'
+        console.log(result)
+        return result
+      },
+      fixedString () {
+        let results = []
+        this.format.cards.forEach((card, i) => {
+          if (card.items) {
+            card.items.forEach((item, i) => {
+              results.push(item.value)
+            })
+          } else {
+            results.push(card.value)
+          }
+        })
+        const result = '/' + results.join('/') + '/' + this.currentTime + '/'
+        console.log(result)
+        return result
       },
       // how to
       // https://www.kabanoki.net/4494/

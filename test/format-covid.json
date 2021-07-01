@@ -1,8 +1,6 @@
 {
   "title": "新型コロナウィルス感染症軽症者等の健康観察票",
-  "valid": false,
-  "overlay": false,
-  "zIndex": 0,
+  "codeFunction": "splitString",
   "cards": [
     {
       "type": "textInput",
