@@ -261,6 +261,10 @@
         return result
       },
       fixedString () {
+        const appCode = this.format.appCode
+        const formatCode = this.format.formatCode
+        const versionCode = this.format.versionCode
+        const prefix = appCode + formatCode + versionCode
         let results = []
         this.cards.forEach((card, i) => {
           if (card.items) {
@@ -279,7 +283,7 @@
             results.push(str)
           }
         })
-        const result = results.join('')
+        const result = prefix + results.join('')
         console.log(result)
         return result
       },
@@ -302,13 +306,15 @@
         const num = number ? number : 0
         const str = String(Math.round(num))
         const diff = length - str.length
+        //console.log('str ' + str + ', diff ' + diff)
         if (diff > 0) {
           result = '0'.repeat(diff) + str
-        } if (diff < 0) {
+        } else if (diff < 0) {
           result = str.slice( -1 * length )
         } else {
           result = str
         }
+        //console.log('result ' + result)
         return result
       }
     }
