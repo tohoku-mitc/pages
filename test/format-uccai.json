@@ -34,10 +34,10 @@
       "counter": 2
     },
     {
-      "type": "radio",
+      "type": "multipleRadio",
       "label": "現在の便の状態",
       "layout": "row",
-      "value": null,
+      "value": [],
       "counter": 4,
       "radios": ["硬便", "普通便", "軟便", "水様便"]
     },
