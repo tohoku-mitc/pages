@@ -34,12 +34,15 @@
       "counter": 2
     },
     {
-      "type": "multipleRadio",
+      "type": "checkbox",
       "label": "現在の便の状態",
       "layout": "row",
-      "value": [],
-      "counter": 4,
-      "radios": ["硬便", "普通便", "軟便", "水様便"]
+      "items": [
+        {"label": "硬便", "value": null},
+        {"label": "普通便", "value": null},
+        {"label": "軟便", "value": null},
+        {"label": "水様便", "value": null}
+      ]
     },
     {
       "type": "radio",
