@@ -128,13 +128,14 @@
             <b> {{ card.label }} </b>
             <v-row no-gutters>
               <v-col
-                v-for="(item, index) in card.items"
+                v-for="(item, itemIndex) in card.items"
+                :key="itemIndex"
               >
                 <v-checkbox
                   v-model="item.value"
-                  label="item.label"
-                  color="red"
-                  value="red"
+                  :label="item.label"
+                  false-value="0"
+                  true-value="1"
                   hide-details
                   >
                 </v-checkbox>
