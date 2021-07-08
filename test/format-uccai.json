@@ -73,7 +73,7 @@
       "radios": ["なし", "あり"],
       "rating": null,
       "items": [
-        {"label": "38℃以上の発熱<br>（大腸炎による）", "value": null},
+        {"label": "38℃以上の発熱¥n（大腸炎による）", "value": null},
         {"label": "虹彩炎・ぶどう膜炎", "value": null},
         {"label": "結節性紅斑・壊疽性膿皮症", "value": null},
         {"label": "関節炎", "value": null}
