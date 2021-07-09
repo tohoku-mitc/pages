@@ -1,0 +1,83 @@
+{
+  "title": "潰瘍性大腸炎患者の健康観察票",
+  "codeFunction": "fixedString",
+  "appCode": "8",
+  "formatCode": "02",
+  "versionCode": "01",
+  "cards": [
+    {
+      "type": "textInput",
+      "label": "身長を入力してください　（　　cm）",
+      "value": null,
+      "counter": 4,
+      "multiplier": 0.1,
+      "$comment": "counter=4 QR文字列4桁(デフォルト値=1)",
+      "$comment": "multiplier=0.1 小数点以下1桁(デフォルト値=1)"
+    },
+    {
+      "type": "textInput",
+      "label": "体重を入力してください　（　　kg）",
+      "value": null,
+      "counter": 4,
+      "multiplier": 0.1
+    },
+    {
+      "type": "textInput",
+      "label": "発症前の便回数を入力してください（　　回/日）",
+      "value": null,
+      "counter": 2
+    },
+    {
+      "type": "textInput",
+      "label": "現在の便回数を入力してください（　　回/日）",
+      "value": null,
+      "counter": 2
+    },
+    {
+      "type": "checkbox",
+      "label": "現在の便の状態",
+      "layout": "row",
+      "items": [
+        {"label": "硬便", "value": null},
+        {"label": "普通便", "value": null},
+        {"label": "軟便", "value": null},
+        {"label": "水様便", "value": null}
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "現在の血便の頻度",
+      "value": null,
+      "radios": ["なし",
+        "排便時の半数以下でわずかに血液が付着",
+        "ほとんどの排便時に明らかな血液の混入",
+        "大部分が血液"]
+    },
+    {
+      "type": "radio",
+      "label": "最近１週間の血便",
+      "layout": "row",
+      "value": null,
+      "radios": ["なし", "少量", "多量"]
+    },
+    {
+      "type": "radio",
+      "label": "腹痛",
+      "layout": "row",
+      "value": null,
+      "radios": ["なし", "軽度", "中等度", "高度"]
+    },
+    {
+      "type": "radioGroup",
+      "label": "その他",
+      "radios": ["なし", "あり"],
+      "rating": null,
+      "items": [
+        {"label": "38℃以上の発熱(大腸炎による)", "value": null},
+        {"label": "虹彩炎・ぶどう膜炎", "value": null},
+        {"label": "結節性紅斑・壊疽性膿皮症", "value": null},
+        {"label": "関節炎", "value": null}
+      ]
+    }
+  ]
+}

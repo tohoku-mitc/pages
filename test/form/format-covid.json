@@ -1,0 +1,79 @@
+{
+  "title": "新型コロナウィルス感染症軽症者等の健康観察票",
+  "codeFunction": "splitString",
+  "cards": [
+    {
+      "type": "textInput",
+      "label": "管理番号を入力してください ",
+      "value": null,
+      "rules": "[v => !!v || '必須項目です', v => (v && v.length == 4) || '管理番号（4桁）を入力してください']",
+      "counter": 4
+    },
+    {
+      "type": "textInput",
+      "label": "検温結果を入力してください　（　　℃）",
+      "value": null,
+      "rules": "[v => !!v || '必須項目です', v => (v && v.length == 4) || '小数点以下１桁まで入力してください（例：36.5）']",
+      "counter": 4
+    },
+    {
+      "type": "textInput",
+      "label": "Sp02（酸素飽和度）結果を入力してください（　　％）",
+      "value": null,
+      "rules": "[v => !!v || '必須項目です']",
+      "counter": null
+    },
+    {
+      "type": "textInput",
+      "label": "脈拍を入力してください（　　回）",
+      "value": null,
+      "rules": "[v => !!v || '必須項目です']",
+      "counter": null
+    },
+    {
+      "type": "radioGroup",
+      "label": "体調についてお答えください",
+      "radios":["なし", "あり"],
+      "rating": 10,
+      "items": [
+        {"label": "咳", "value": null},
+        {"label": "痰", "value": null},
+        {"label": "息苦しさ", "value": null},
+        {"label": "全身の倦怠感", "value": null},
+        {"label": "吐き気、嘔吐", "value": null},
+        {"label": "下痢", "value": null},
+        {"label": "鼻水", "value": null},
+        {"label": "鼻づまり", "value": null},
+        {"label": "のどの痛み", "value": null},
+        {"label": "頭痛", "value": null},
+        {"label": "関節筋肉痛", "value": null},
+        {"label": "味覚障害", "value": null},
+        {"label": "嗅覚障害", "value": null}
+      ]
+    },
+    {
+      "type": "radioGroup",
+      "label": "その他",
+      "radios": ["良好", "普通", "悪い"],
+      "rating": null,
+      "items": [
+        {"label": "睡眠", "value": null},
+        {"label": "食欲", "value": null},
+        {"label": "排尿", "value": null},
+        {"label": "排便", "value": null}
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "持参薬は服用しましたか",
+      "value": null,
+      "radios": ["はい", "いいえ", "持参薬はない"]
+    },
+    {
+      "type": "radio",
+      "label": "解熱・鎮痛剤を服用しましたか",
+      "value": null,
+      "radios": ["はい", "いいえ"]
+    }
+  ]
+}
