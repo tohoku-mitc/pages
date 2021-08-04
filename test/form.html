@@ -260,6 +260,7 @@
       }
     },
     created() {
+      this.initAxios()
       this.db = new ydn.db.Storage('db-questionnaire')
 
       let uri = window.location.search.substring(1)
@@ -270,6 +271,12 @@
       this.loadFormat()
     },
     methods: {
+      initAxios () {
+        // axios.defaults.baseURL = 'http://localhost'
+        axios.defaults.headers.get['Content-Type'] = 'application/json;charset=utf-8'
+        axios.defaults.headers.get['Access-Control-Allow-Origin'] = '*'
+        axios.defaults.headers.get['Cache-Control'] = 'no-cache'
+      },
       loadStore (format) {
         if (format) {
           const formatCode = format.formatCode
