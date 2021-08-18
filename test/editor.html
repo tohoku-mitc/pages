@@ -101,6 +101,7 @@
                 v-model="card.type"
                 label="項目種別"
                 :items="itemTypes"
+                @change="valueChanged"
               ></v-select>
             </v-col>
             <v-col>
@@ -153,9 +154,10 @@
             </v-col>
             <v-col md="2" sm="3" xs="4">
               <v-text-field
-                v-model="card.value"
+                v-model="card.counter"
                 label="文字数制限"
                 type="number"
+                @change="valueChanged"
               >
               </v-text-field>
             </v-col>
@@ -184,6 +186,7 @@
                 label="選択グループ各項目の選択肢（順序あり）"
                 multiple
                 chips
+                @change="valueChanged"
               ></v-combobox>
             </v-col>
           </v-row>
@@ -199,14 +202,16 @@
                 v-model="item.label"
                 label="項目の質問文"
                 md="4"
+                @change="valueChanged"
               >
               </v-text-field>
             </v-col>
             <v-col md="2" sm="3" xs="4">
               <v-select
-                v-model="item.value"
+                :value="valueOf(card,item)"
                 label="デフォルト値"
                 :items="card.radios"
+                @change="indexChanged(card,item,$event)"
               ></v-select>
             </v-col>
             <v-col md="1" sm="1" xs="1">
@@ -245,6 +250,7 @@
                 v-model="card.layout"
                 label="レイアウト"
                 :items="radioLayouts"
+                @change="valueChanged"
               ></v-select>
             </v-col>
           </v-row>
@@ -256,13 +262,15 @@
                 label="選択肢（順序あり）"
                 multiple
                 chips
+                @change="valueChanged"
               ></v-combobox>
             </v-col>
             <v-col md="2" sm="3" xs="4">
               <v-select
-                v-model="card.value"
+                :value="valueOf(card,card)"
                 label="デフォルト値"
                 :items="card.radios"
+                @change="indexChanged(card,card,$event)"
               ></v-select>
             </v-col>
           </v-row>
@@ -286,6 +294,7 @@
                 v-model="card.layout"
                 label="レイアウト"
                 :items="radioLayouts"
+                @change="valueChanged"
               ></v-select>
             </v-col>
           </v-row>
@@ -300,6 +309,7 @@
               <v-text-field
                 v-model="item.label"
                 label="項目の質問文"
+                @change="valueChanged"
               >
               </v-text-field>
             </v-col>
@@ -336,14 +346,20 @@
     <v-container>
       <v-row align="center" justify="center">
         <v-col>
-          <small v-if="!valid">未入力もしくは入力間違いの項目があります。</small>
           <v-btn
             :disabled="!valid"
             width="100%"
             @click="updateFormat"
           >
-            <b> テンプレートを更新 </b>
+            <b> フォーマットを更新 </b>
           </v-btn>
+          <v-alert
+            outlined
+            color="blue">
+            １つ以上の項目を更新してから、フォーマット更新ボタンが有効になります。<br>
+            フォーマット更新のボタンを押すと、フォームのフォーマットが更新されます。<br>
+            短期間に繰り返し更新しないよう、少し時間を開けてから更新ください。
+          </v-alert>
         </v-col>
       </v-row>
     </v-container>
@@ -356,11 +372,7 @@
             opacity="0.9"
             color="#000000"
           >
-            <v-form
-              ref="form"
-              v-model="valid"
-              lazy-validation
-            >
+            <v-form>
               <v-text-field
                 v-model="username"
                 label="User Name"
@@ -377,8 +389,56 @@
               >
                 ログイン
               </v-btn>
-              {{ loginMessage }}
+              <v-alert :type="messageType">
+                {{ message }}
+              </v-alert>
             </v-form>
+          </v-overlay>
+        </v-col>
+      </v-row>
+    </v-container>
+    <v-container>
+      <v-row align="center" justify="center">
+        <v-col md="6">
+          <v-overlay
+            :z-index="zIndex"
+            :value="overlayUpdated"
+            opacity="0.9"
+            color="#ffffff"
+          >
+            <v-row>
+              <v-alert :type="messageType">
+                {{ message }}
+              </v-alert>
+            </v-row>
+            <v-row>
+              <v-alert
+                outlined
+                color="blue">
+                以下のURLもしくはQRコードから、入力画面を開ます。<br>
+                フォームを保存してから入力画面へ反映するまでに数分間かかりますので、しばらくしてからお試しください。<br>
+                (早く反映したい場合は、ブラウザのキャッシュデータをクリアしてから再度お試しください)<br>
+                {{ inputUrl }}
+              </v-alert>
+            </v-row>
+            <v-row align="center" justify="center">
+              <qriously
+                class="text-center"
+                :value="inputUrl"
+                :size="260"
+              />
+            </v-row>
+            <v-row>
+              <br>
+            </v-row>
+            <v-row align="center" justify="center">
+              <v-btn
+                width="100%"
+                @click="reload"
+              >
+                編集画面へ戻る
+              </v-btn>
+            </v-row>
           </v-overlay>
         </v-col>
       </v-row>
@@ -395,15 +455,20 @@
     vuetify: new Vuetify(),
   	data() {
     	return {
+        publicUrl: 'https://tohoku-mitc.github.io/pages/',
+        formatUrl: 'https://raw.githubusercontent.com/tohoku-mitc/pages/main/',
         dirPath: 'test/',
-        formatPath: null,
-        valid: true,
+        formatName: null,
+        valid: false,
         username: '',
         password: '',
-        loginMessage: '',
+        message: '',
+        messageType: null,
+        overlayUpdated: false,
         overlay: true,
         zIndex: 0,
         format: null,
+        sha: null,
         octokit: null,
         itemTypes: [
           'textInput',
@@ -414,12 +479,6 @@
         radioLayouts: [
           'column',
           'row'
-        ],
-        dummyItems: [
-          'Programming',
-          'Design',
-          'Vue',
-          'Vuetify'
         ],
         select: null
       }
@@ -439,6 +498,12 @@
           return 'wating for load data'
         }
       },
+      inputUrl () {
+        return this.publicUrl + this.dirPath + 'form?format=' + this.formatName
+      },
+      formatPath () {
+        return this.dirPath + this.formatName
+      },
       // 現在時刻取得（yyyy/mm/dd hh:mm:ss）
       currentTime () {
         const now = new Date()
@@ -455,13 +520,17 @@
       let uri = window.location.search.substring(1)
       let params = new URLSearchParams(uri)
       let format = params.get("format")
-      this.formatPath = this.dirPath + format
+      this.formatName = format
 
-      this.loadFormat()
+      // this.loadFormat()
     },
     methods: {
       login () {
         this.authGithub()
+      },
+      reload () {
+        this.getContent()
+        this.overlayUpdated = false
       },
       async authGithub () {
         const key1 = `ghp_`
@@ -475,20 +544,23 @@
         const self = this
         const data = await this.octokit.rest.users.getAuthenticated().then((response) => {
           console.log(response)
-          self.loginMessage = ''
+          self.message = ''
+          self.messageType = null
           self.overlay = false
+          self.getContent()
         }).catch(function (error) {
           console.log(error)
-          self.loginMessage = 'ログイン失敗しました。'
+          self.message = 'ログイン失敗しました。'
+          self.messageType = 'error'
         }).finally(function () {
           // always executed
         })
       },
       async updateFormat () {
+        this.valid = false
         this.format.updated = this.currentTime
 
-        const content = await this.getContent()
-        this.putContent(content.sha)
+        this.putContent()
       },
       async getContent () {
         const { data } = await this.octokit.request("GET /repos/{owner}/{repo}/contents/{path}", {
@@ -496,52 +568,53 @@
           owner: "tohoku-mitc",
           repo: "pages",
           path: this.formatPath,
+        }).catch(function (error) {
+          // handle error
+          console.log(error)
+          self.message = 'フォーマットをロードできませんでした。?format=フォーマットパスをご確認ください。'
+          self.messageType = 'error'
+        }).finally(function () {
+          // always executed
+          self.message = ''
+          self.messageType = null
         })
         console.log("data: ", data)
-        return data
+        this.sha = data.sha
+        const content = decodeURIComponent(escape(atob(data.content)))
+        console.log("content: ", content)
+        const format = JSON.parse(content)
+        console.log("format: ", format)
+        this.format = format
       },
-      async putContent (sha) {
+      async putContent () {
+        this.overlayUpdated = true
+
         const content = JSON.stringify(this.format)
         // https://qiita.com/weal/items/1a2af81138cd8f49937d
         const base64 = btoa(unescape(encodeURIComponent(content)))
         // const hex = SHA256.createHash().update(data).digest("hex")
+        const self = this
         const response = await this.octokit.request("PUT /repos/{owner}/{repo}/contents/{path}", {
           mediaType: {
             format: "raw",
           },
           owner: "tohoku-mitc",
           repo: "pages",
-          path: "test/format-cdai.json",
+          path: this.formatPath,
           message: "updated from editor",
           content: base64,
-          sha
+          sha: this.sha
+        }).then((response) => {
+          console.log("response: ", response)
+          self.message = 'フォーム更新が成功しました。しばらくしてから入力画面をお試しください。'
+          self.messageType = 'success'
+        }).catch(function (error) {
+          console.log("error: ", error)
+          self.message = 'フォーム更新が失敗しました。しばらくしてから、再度お試しください。'
+          self.messageType = 'error'
+        }).finally(function () {
+          // always executed
         })
-        console.log("response: ", response)
-      },
-      loadFormat () {
-        var requestUrl = "https://tohoku-mitc.github.io/pages/" + this.formatPath
-        // use this for other
-        //var requestUrl = this.selectedUrl
-        axios.get(requestUrl).then((response) => {
-            const format = response.data
-            console.log(format.title)
-            this.format = format
-          }).catch(function (error) {
-            // handle error
-            var status = ""
-            var message = ""
-            if (error.response) {
-              status = error.response.status
-              if (status == '403') {
-                message = "リソース取得失敗しました。"
-              } else {
-                message = "リソース取得失敗しました。URLをご確認ください。"
-              }
-            }
-            console.log(error);
-          }).finally(function () {
-            // always executed
-          })
       },
       addCard (index) {
         const newCard = {
@@ -593,7 +666,26 @@
       valueChanged () {
         if (this.format) {
           this.format.updated = this.currentTime
+          this.valid = true
         }
+        this.message = ''
+        this.messageType = null
+      },
+      valueOf (card, item) {
+        // console.log(card)
+        // console.log(item)
+        if (item.value >= 0) {
+          return card.radios[item.value]
+        } else {
+          return null
+        }
+      },
+      indexChanged (card, item, event) {
+        // console.log(event)
+        item.value = card.radios.indexOf(event)
+        // console.log(item.value)
+
+        this.valueChanged()
       },
       // 先頭ゼロ付加
       padZero (number, length) {
