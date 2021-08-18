@@ -1,5 +1,5 @@
 {
-  "title": "潰瘍性大腸炎患者の健康観察票",
+  "title": "潰瘍性大腸炎 問診入力",
   "codeFunction": "fixedString",
   "appCode": "8",
   "formatCode": "02",
@@ -23,13 +23,13 @@
     },
     {
       "type": "textInput",
-      "label": "発症前の便回数を入力してください（　　回/日）",
+      "label": "発症前の便回数（　　回/日）",
       "value": null,
       "counter": 2
     },
     {
       "type": "textInput",
-      "label": "現在の便回数を入力してください（　　回/日）",
+      "label": "現在の便回数（　　回/日）",
       "value": null,
       "counter": 2
     },
