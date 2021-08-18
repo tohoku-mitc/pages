@@ -312,7 +312,7 @@
         //var requestUrl = this.selectedUrl
         axios.get(requestUrl).then((response) => {
             const format = response.data
-            console.log(format.title)
+            console.log(format)
             this.format = format
 
             this.loadStore(format)
