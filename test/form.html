@@ -300,8 +300,9 @@
         if (format) {
           const formatCode = format.formatCode
           const versionCode = format.versionCode
+          const formatKey = formatCode + '.' + versionCode
           const self = this
-          this.db.get(formatCode, versionCode).always(function(record) {
+          this.db.get('format', formatKey).always(function(record) {
             console.log(record)
             const storeFormat = record
             if (storeFormat && storeFormat.versionCode == versionCode) {
@@ -321,7 +322,8 @@
         if (this.format && this.format.updated) {
           const formatCode = this.format.formatCode
           const versionCode = this.format.versionCode
-          this.db.put(formatCode, this.format, versionCode)
+          const formatKey = formatCode + '.' + versionCode
+          this.db.put('format', this.format, formatKey)
           console.log('format saved', this.format)
         }
       },
