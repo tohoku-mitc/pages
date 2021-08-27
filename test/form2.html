@@ -291,7 +291,7 @@
       var result = window.prompt('本人確認のために、生年月日を入力してください(例:1980/01-01)', '1980/01/01')
       if( result ) {
         console.log('secret' , result)
-        const digest = await this.sha256(result)
+        const digest = this.sha256(result)
         options = {
           Encryption: {
             encryptKey: false,   // optional encrypt primary key
