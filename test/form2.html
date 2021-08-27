@@ -288,24 +288,7 @@
     created() {
       this.initAxios()
 
-      var result = window.prompt('本人確認のために、生年月日を入力してください(例:1980/01-01)', '1980/01/01')
-      if( result ) {
-        console.log('secret' , result)
-        const digest = this.sha256(result)
-        options = {
-          Encryption: {
-            encryptKey: false,   // optional encrypt primary key
-            secrets: [{
-              name: 'userKey',
-              key: digest
-            }]
-          }
-        }
-      } else {
-        console.log('キャンセルがクリックされました')
-      }
-      console.log('options' , options)
-      this.db = new ydn.db.Storage('db-questionnaire', schema, options)
+      this.initDB()
 
       let uri = window.location.search.substring(1)
       let params = new URLSearchParams(uri)
@@ -320,6 +303,27 @@
         axios.defaults.headers.get['Content-Type'] = 'application/json;charset=utf-8'
         axios.defaults.headers.get['Access-Control-Allow-Origin'] = '*'
         axios.defaults.headers.get['Cache-Control'] = 'no-cache'
+      },
+      async initDB () {
+        var result = window.prompt('本人確認のために、生年月日を入力してください(例:1980/01-01)', '1980/01/01')
+        if( result ) {
+          console.log('secret' , result)
+          const digest = await this.sha256(result)
+          console.log('digest' , digest)
+          options = {
+            Encryption: {
+              encryptKey: false,   // optional encrypt primary key
+              secrets: [{
+                name: 'userKey',
+                key: digest
+              }]
+            }
+          }
+        } else {
+          console.log('キャンセルがクリックされました')
+        }
+        console.log('options' , options)
+        this.db = new ydn.db.Storage('db-questionnaire', schema, options)
       },
       loadStore (format) {
         if (format) {
