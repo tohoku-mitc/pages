@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>questionnaire form</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="googlebot" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.20.0/vis.min.js" integrity="sha512-CFZV2b4rQq36cxk/HnXzgNxvDJlasmPCZEyrOuLk5oSkLCpw5Ni5LCD9HzFQ96DgE+xd855/HvkRfeK67QOFJw==" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.17.1/axios.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue-qriously@1.1.1/dist/vue-qriously.min.js"></script>
+  <!--<script src="https://cdn.jsdelivr.net/npm/ydn.db@1.3.0/jsc/ydn.db-dev.min.js"></script>-->
+  <script type="text/javascript" src="ydn.db-isw-core-crypt-qry-dev.js"></script>
+
+  <style id="compiled-css" type="text/css">
+  .v-text-field input {
+    font-size: 1.4em;
+    text-align: center;
+  }
+  </style>
+
+</head>
+<body>
+  <v-app id="app">
+    <v-container>
+      <v-row align="center" justify="center">
+        <v-col md="6">
+          <h1>{{ title }}</h1>
+        </v-col>
+      </v-row>
+    </v-container>
+    <v-form
+      ref="form"
+      v-model="valid"
+      lazy-validation
+    >
+      <v-container
+        v-for="(card, cardIndex) in cards"
+        :key="cardIndex"
+      >
+        <v-row
+          align="center" justify="center"
+          v-if="card.type=='textInput'"
+          no-gutters
+        >
+          <v-col md="6">
+            <v-text-field
+              v-model="card.value"
+              :counter="card.counter"
+              :label="card.label"
+              type="number"
+              required
+              @change="valueChanged"
+            >
+            </v-text-field>
+          </v-col>
+        </v-row>
+        <v-row
+          align="center" justify="center"
+          v-if="card.type=='radioGroup'"
+          no-gutters
+        >
+          <v-col md="6">
+            <b> {{ card.label }} </b><br>
+            <small v-if="card.rating">症状がある場合は、症状の強さ０〜１０を選択してください</small>
+            <table width="100%">
+              <tr
+                v-for="(item, itemIndex) in card.items"
+                :key="itemIndex"
+              >
+                <td align="left">
+                  {{ item.label }}
+                </td>
+                <td align="right">
+                  <v-radio-group
+                    v-model="item.value"
+                    row
+                    @change="valueChanged"
+                  >
+                    <v-radio
+                      v-for="(radio, radioIndex) in card.radios"
+                      :key="radioIndex"
+                      :label="radio"
+                      :value="radioIndex"
+                    ></v-radio>
+                  </v-radio-group>
+                  <v-rating
+                    v-if="card.rating && item.value>0"
+                    dense
+                    v-model="item.value"
+                    length="10"
+                    size="24"
+                    color="red lighten-3"
+                    background-color="grey lighten-1"
+                    empty-icon="mdi-circle-outline"
+                    full-icon="mdi-circle"
+                    @input="valueChanged"
+                  ></v-rating>
+                </td>
+              </tr>
+            </table>
+          </v-col>
+        </v-row>
+        <v-row
+          align="center" justify="center"
+          v-if="card.type=='radio'"
+          no-gutters
+        >
+          <v-col md="6">
+            <b> {{ card.label }} </b>
+            <v-radio-group
+              v-model="card.value"
+              :row="card.layout ? (card.layout == 'row') : false"
+              @change="valueChanged"
+            >
+              <v-radio
+                v-for="(radio, radioIndex) in card.radios"
+                :key="radioIndex"
+                :label="radio"
+                :value="radioIndex"
+              ></v-radio>
+            </v-radio-group>
+          </v-col>
+        </v-row>
+        <v-row
+          align="center" justify="center"
+          v-if="card.type=='checkbox'"
+          no-gutters
+        >
+          <v-col md="6">
+            <b> {{ card.label }} </b>
+            <v-row no-gutters>
+              <v-col
+                v-for="(item, itemIndex) in card.items"
+                :key="itemIndex"
+              >
+                <v-checkbox
+                  v-model="item.value"
+                  :label="item.label"
+                  false-value="0"
+                  true-value="1"
+                  hide-details
+                  @change="valueChanged"
+                  >
+                </v-checkbox>
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-form>
+    <v-container>
+      <v-row align="center" justify="center">
+        <v-col md="6">
+          <small v-if="!valid">未入力もしくは入力間違いの項目があります。</small>
+          <v-btn
+            :disabled="!valid"
+            width="100%"
+            @click="overlay = true"
+          >
+            <b> QRコードを表示 </b>
+          </v-btn>
+        </v-col>
+      </v-row>
+    </v-container>
+    <v-container>
+      <v-row align="center" justify="center">
+        <v-col md="6">
+          <v-overlay
+            :z-index="zIndex"
+            :value="overlay"
+            opacity="0.9"
+            color="#ffffff"
+          >
+          <v-row align="center" justify="center">
+            <v-alert
+              outlined
+              color="blue">
+              {{ result }}
+            </v-alert>
+          </v-row>
+            <v-row align="center" justify="center">
+              <qriously
+                class="text-center"
+                :value="result"
+                :size="260"
+              />
+            </v-row>
+            <v-row>
+              <br>
+            </v-row>
+            <v-row align="center" justify="center">
+              <v-btn
+                width="100%"
+                @click="overlay = false"
+              >
+                入力画面へ戻る
+              </v-btn>
+            </v-row>
+          </v-overlay>
+        </v-col>
+      </v-row>
+    </v-container>
+    <br>
+  </v-app>
+  <script>
+
+  var options = {
+    Encryption: {
+      encryptKey: false,   // optional encrypt primary key
+      secrets: [{
+        name: 'testKey',
+        key: '142a720687773c762280d2768d35193f506f115a10efb0af63004bcae21cb487'
+        // key: 'z$C&F)J@McQfTjWnZr4u7x!A%D*G-KaP'
+      }]
+    }
+  }
+
+  var schema = {
+    stores:[{
+      name:'format',
+      encrypted: true
+    }]
+  }
+
+  Vue.use(window['vue-qriously'])
+  var app = new Vue({
+  	el: '#app',
+    vuetify: new Vuetify(),
+  	data() {
+    	return {
+        dirPath: 'test/',
+        formatPath: null,
+        valid: true,
+        overlay: false,
+        zIndex: 0,
+        format: null,
+        db: null
+      }
+    },
+    computed: {
+      cards () {
+        if (this.format) {
+          return this.format.cards
+        } else {
+          return null
+        }
+      },
+      title () {
+        if (this.format) {
+          return this.format.title
+        } else {
+          return 'wating for load data'
+        }
+      },
+      result () {
+        if (this.format) {
+          const codeFunction = this.format.codeFunction
+          if (codeFunction === 'fixedString') {
+            return this.fixedString()
+          } else {
+            return this.splitString()
+          }
+        } else {
+          return ''
+        }
+      },
+      // 現在時刻取得（yyyy/mm/dd hh:mm:ss）
+      currentTime () {
+        const now = new Date()
+        const res = '' + now.getFullYear() +
+          '-' + this.padZero(now.getMonth() + 1, 2) +
+          '-' + this.padZero(now.getDate(), 2) +
+          'T' + this.padZero(now.getHours(), 2) +
+          ':' + this.padZero(now.getMinutes(), 2) +
+          ':' + this.padZero(now.getSeconds(), 2)
+        return res
+      }
+    },
+    created() {
+      this.initAxios()
+
+      var result = window.prompt('本人確認のために、生年月日を入力してください(例:1980/01-01)', '1980/01/01')
+      if( result ) {
+        console.log('secret' , result)
+        const digest = await sha256(result)
+        options = {
+          Encryption: {
+            encryptKey: false,   // optional encrypt primary key
+            secrets: [{
+              name: 'userKey',
+              key: digest
+            }]
+          }
+        }
+      } else {
+        console.log('キャンセルがクリックされました')
+      }
+      console.log('options' , options)
+      this.db = new ydn.db.Storage('db-questionnaire', schema, options)
+
+      let uri = window.location.search.substring(1)
+      let params = new URLSearchParams(uri)
+      let format = params.get("format")
+      this.formatPath = this.dirPath + format
+
+      this.loadFormat()
+    },
+    methods: {
+      initAxios () {
+        // axios.defaults.baseURL = 'http://localhost'
+        axios.defaults.headers.get['Content-Type'] = 'application/json;charset=utf-8'
+        axios.defaults.headers.get['Access-Control-Allow-Origin'] = '*'
+        axios.defaults.headers.get['Cache-Control'] = 'no-cache'
+      },
+      loadStore (format) {
+        if (format) {
+          const formatCode = format.formatCode
+          const versionCode = format.versionCode
+          const formatKey = formatCode + '.' + versionCode
+          const self = this
+          this.db.get('format', formatKey).always(function(record) {
+            console.log(record)
+            const storeFormat = record
+            if (storeFormat && storeFormat.versionCode == versionCode) {
+              const updated = storeFormat.updated
+              var result = window.confirm('過去（' + updated + '）に保存されたデータを利用しますか？')
+              if( result ) {
+                console.log('use storeFormat' , storeFormat)
+                self.format = storeFormat
+              } else {
+                console.log('キャンセルがクリックされました')
+              }
+            }
+          })
+        }
+      },
+      saveStore () {
+        if (this.format && this.format.updated) {
+          const formatCode = this.format.formatCode
+          const versionCode = this.format.versionCode
+          const formatKey = formatCode + '.' + versionCode
+          this.db.put('format', this.format, formatKey)
+          console.log('format saved', this.format)
+        }
+      },
+      loadFormat () {
+        var requestUrl = "https://tohoku-mitc.github.io/pages/" + this.formatPath
+        // use this for other
+        //var requestUrl = this.selectedUrl
+        axios.get(requestUrl).then((response) => {
+            const format = response.data
+            console.log(format)
+            this.format = format
+
+            this.loadStore(format)
+            // this.$forceUpdate()
+          }).catch(function (error) {
+            // handle error
+            var status = ""
+            var message = ""
+            if (error.response) {
+              status = error.response.status
+              if (status == '403') {
+                message = "リソース取得失敗しました。"
+              } else {
+                message = "リソース取得失敗しました。URLをご確認ください。"
+              }
+            }
+            console.log(error);
+          }).finally(function () {
+            // always executed
+          });
+      },
+      splitString () {
+        let results = []
+        this.cards.forEach((card, i) => {
+          if (card.items) {
+            card.items.forEach((item, i) => {
+              results.push(item.value)
+            })
+          } else {
+            results.push(card.value)
+          }
+        })
+        const result = '/' + results.join('/') + '/' + this.currentTime + '/'
+        console.log(result)
+        return result
+      },
+      fixedString () {
+        const appCode = this.format.appCode
+        const formatCode = this.format.formatCode
+        const versionCode = this.format.versionCode
+        const prefix = appCode + formatCode + versionCode
+        let results = []
+        this.cards.forEach((card, i) => {
+          if (card.items) {
+            card.items.forEach((item, i) => {
+              const multiplier = item.multiplier ? item.multiplier : 1
+              const counter = item.counter ? item.counter : 1
+              const num = item.value / multiplier
+              const str = this.padZero(num, counter)
+              results.push(str)
+            })
+          } else {
+            const multiplier = card.multiplier ? card.multiplier : 1
+            const counter = card.counter ? card.counter : 1
+            const num = card.value / multiplier
+            const str = this.padZero(num, counter)
+            results.push(str)
+          }
+        })
+        const result = prefix + results.join('')
+        console.log(result)
+        return result
+      },
+      valueChanged () {
+        if (this.format) {
+          this.format.updated = this.currentTime
+          this.saveStore()
+        }
+      },
+      // how to
+      // https://www.kabanoki.net/4494/
+      // sample source
+      // https://jsfiddle.net/kabanoki/s6k4Lrxp/
+      // other choices
+      // https://github.com/fengyuanchen/vue-qrcode
+      // https://github.com/superman66/vue-qart
+      validate () {
+        //
+      },
+      overlayClicked () {
+        console.log('overlayClicked')
+      },
+      // 先頭ゼロ付加
+      padZero (number, length) {
+        let result
+        const num = number ? number : 0
+        const str = String(Math.round(num))
+        const diff = length - str.length
+        //console.log('str ' + str + ', diff ' + diff)
+        if (diff > 0) {
+          result = '0'.repeat(diff) + str
+        } else if (diff < 0) {
+          result = str.slice( -1 * length )
+        } else {
+          result = str
+        }
+        //console.log('result ' + result)
+        return result
+      },
+      // https://scrapbox.io/nwtgck/SHA256%E3%81%AE%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%92JavaScript%E3%81%AEWeb%E6%A8%99%E6%BA%96%E3%81%AE%E3%83%A9%E3%82%A4%E3%83%96%E3%83%A9%E3%83%AA%E3%81%A0%E3%81%91%E3%81%A7%E8%A8%88%E7%AE%97%E3%81%99%E3%82%8B
+      async function sha256(str) {
+        // Convert string to ArrayBuffer
+        const buff = new Uint8Array([].map.call(str, (c) => c.charCodeAt(0))).buffer;
+        // Calculate digest
+        const digest = await crypto.subtle.digest('SHA-256', buff);
+        // Convert ArrayBuffer to hex string
+        // (from: https://stackoverflow.com/a/40031979)
+        return [].map.call(new Uint8Array(digest), x => ('00' + x.toString(16)).slice(-2)).join('');
+      }
+    }
+  })
+  </script>
+</body>
+</html>
